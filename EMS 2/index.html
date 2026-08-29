@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMS - Rajarata University</title>
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SweetAlert2 (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Dexie.js (CDN) -->
+    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+    
+    <!-- CryptoJS (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="flex-grow flex items-center justify-center p-4">
+        <div class="glass-card rounded-xl shadow-2xl p-8 max-w-md w-full">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-blue-900">EMS Portal</h1>
+                <p class="text-gray-500 mt-2">Rajarata University of Sri Lanka</p>
+            </div>
+            
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" id="email" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="user@rjt.ac.lk">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="mt-6 text-sm text-center text-gray-500 border-t pt-4">
+                <p>Default Dummy Password: <b>123456</b></p>
+                <p>Emails: hod@rjt.ac.lk, ar@rjt.ac.lk, lec1@rjt.ac.lk, ext1@otheruni.ac.lk</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP VIEW -->
+    <div id="app-view" class="hidden flex-grow flex bg-gray-100">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-lg flex flex-col hidden md:flex">
+            <div class="p-6 border-b">
+                <h2 class="text-2xl font-bold text-blue-900">EMS</h2>
+                <p class="text-sm text-gray-500">Rajarata University</p>
+            </div>
+            <div class="p-6 flex-grow">
+                <div class="mb-6">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Logged In As</p>
+                    <p id="user-name-display" class="font-medium text-gray-800 mt-1"></p>
+                    <span id="user-role-display" class="inline-block mt-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"></span>
+                </div>
+                <nav class="space-y-2">
+                    <a href="#" class="block px-4 py-2 rounded-md bg-blue-50 text-blue-700 font-medium">Dashboard</a>
+                </nav>
+            </div>
+            <div class="p-4 border-t">
+                <button id="logout-btn" class="w-full flex items-center justify-center px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8 overflow-y-auto">
+            
+            <header class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Left Column (Main Actions) -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- HoD Section -->
+                    <section id="hod-section" class="role-section hidden">
+                        <div class="bg-white rounded-xl shadow p-6 border-t-4 border-blue-600">
+                            <h2 class="text-xl font-bold mb-4">HoD Overview</h2>
+                            <div id="hod-subjects-list" class="space-y-4"></div>
+                        </div>
+                    </section>
+
+                    <!-- AR Section -->
+                    <section id="ar-section" class="role-section hidden">
+                        <div class="bg-white rounded-xl shadow p-6 border-t-4 border-green-600">
+                            <h2 class="text-xl font-bold mb-4">AR Actions</h2>
+                            <div id="ar-action-list" class="space-y-4 flex flex-wrap"></div>
+                        </div>
+                    </section>
+
+                    <!-- Lecturer Section -->
+                    <section id="lec-section" class="role-section hidden">
+                        <div class="bg-white rounded-xl shadow p-6 border-t-4 border-purple-600">
+                            <h2 class="text-xl font-bold mb-4">My Subjects (1st Examiner)</h2>
+                            <div id="lec-subjects-list" class="space-y-4"></div>
+                        </div>
+                    </section>
+
+                    <!-- 2nd Examiner Section -->
+                    <section id="2nd-ex-section" class="role-section hidden">
+                        <div class="bg-white rounded-xl shadow p-6 border-t-4 border-orange-600">
+                            <h2 class="text-xl font-bold mb-4">My Subjects (2nd Examiner)</h2>
+                            <div id="2nd-ex-subjects-list" class="space-y-4"></div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- Right Column (Notifications) -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow overflow-hidden">
+                        <div class="p-4 bg-gray-50 border-b">
+                            <h2 class="font-bold text-gray-700">Notifications</h2>
+                        </div>
+                        <div id="notifications-list" class="max-h-96 overflow-y-auto">
+                            <!-- Notifications injected here -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
